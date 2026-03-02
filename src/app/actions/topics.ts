@@ -7,18 +7,7 @@ import { Topic as TopicModel } from "@/lib/models/Topic";
 import { Document as DocumentModel } from "@/lib/models/Document";
 import { revalidatePath } from "next/cache";
 import type { Topic } from "@/lib/types";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function serializeTopic(doc: any, documentCount = 0): Topic {
-  return {
-    id: doc._id.toString(),
-    userId: doc.userId.toString(),
-    name: doc.name,
-    documentCount,
-    createdAt: doc.createdAt.toISOString(),
-    updatedAt: doc.updatedAt.toISOString(),
-  };
-}
+import { serializeTopic, type RawTopicDoc, type DocCountResult } from "@/utils/helpers/serialize";
 
 export async function getTopics(): Promise<Topic[]> {
   const session = await getServerSession(authOptions);
@@ -27,22 +16,16 @@ export async function getTopics(): Promise<Topic[]> {
   await connectDB();
 
   const [rawTopics, docCounts] = await Promise.all([
-    TopicModel.find({ userId: session.user.id }).sort({ createdAt: 1 }).lean(),
-    DocumentModel.aggregate([
+    TopicModel.find({ userId: session.user.id }).sort({ createdAt: 1 }).lean<RawTopicDoc[]>(),
+    DocumentModel.aggregate<DocCountResult>([
       { $match: { userId: session.user.id, archived: false } },
       { $group: { _id: "$topicId", count: { $sum: 1 } } },
     ]),
   ]);
 
-  const countMap = new Map(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (docCounts as any[]).map((c) => [c._id.toString(), c.count as number])
-  );
+  const countMap = new Map(docCounts.map((c) => [c._id.toString(), c.count]));
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (rawTopics as any[]).map((t) =>
-    serializeTopic(t, countMap.get(t._id.toString()) ?? 0)
-  );
+  return rawTopics.map((t) => serializeTopic(t, countMap.get(t._id.toString()) ?? 0));
 }
 
 export async function createTopic(
@@ -56,7 +39,7 @@ export async function createTopic(
   await connectDB();
   const topic = await TopicModel.create({ userId: session.user.id, name: name.trim() });
   revalidatePath("/dashboard");
-  return { success: true, topic: serializeTopic(topic) };
+  return { success: true, topic: serializeTopic(topic as unknown as RawTopicDoc) };
 }
 
 export async function renameTopic(

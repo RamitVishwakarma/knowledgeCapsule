@@ -31,8 +31,13 @@ export function Sidebar({
   onTopicsChange,
   onRefresh,
 }: SidebarProps) {
-  const { selectedTopicId, viewMode, selectTopic, selectDocument, setViewMode, sidebarOpen, setSidebarOpen } =
-    useAppStore();
+  const selectedTopicId = useAppStore((s) => s.selectedTopicId);
+  const viewMode = useAppStore((s) => s.viewMode);
+  const selectTopic = useAppStore((s) => s.selectTopic);
+  const selectDocument = useAppStore((s) => s.selectDocument);
+  const setViewMode = useAppStore((s) => s.setViewMode);
+  const sidebarOpen = useAppStore((s) => s.sidebarOpen);
+  const setSidebarOpen = useAppStore((s) => s.setSidebarOpen);
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState("");
   const [showSettings, setShowSettings] = useState(false);
@@ -237,7 +242,8 @@ function SettingsPanel({
   onRefresh: () => void;
   onClose: () => void;
 }) {
-  const { selectTopic, selectedTopicId } = useAppStore();
+  const selectTopic = useAppStore((s) => s.selectTopic);
+  const selectedTopicId = useAppStore((s) => s.selectedTopicId);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);

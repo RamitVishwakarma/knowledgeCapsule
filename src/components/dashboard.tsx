@@ -15,7 +15,8 @@ interface DashboardProps {
 }
 
 export function Dashboard({ initialTopics, initialArchivedCount }: DashboardProps) {
-  const { selectedDocId, toggleSidebar } = useAppStore();
+  const selectedDocId = useAppStore((s) => s.selectedDocId);
+  const toggleSidebar = useAppStore((s) => s.toggleSidebar);
   const [topics, setTopics] = useState(initialTopics);
   const [archivedCount, setArchivedCount] = useState(initialArchivedCount);
   const router = useRouter();

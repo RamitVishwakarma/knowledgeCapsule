@@ -6,28 +6,7 @@ import { connectDB } from "@/lib/db/mongoose";
 import { Document as DocumentModel } from "@/lib/models/Document";
 import { revalidatePath } from "next/cache";
 import type { Document } from "@/lib/types";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function serializeDoc(doc: any): Document {
-  return {
-    id: doc._id.toString(),
-    userId: doc.userId.toString(),
-    topicId: doc.topicId.toString(),
-    title: doc.title,
-    shortDescription: doc.shortDescription ?? "",
-    longDescription: doc.longDescription ?? "",
-    videoUrl: doc.videoUrl,
-    videoProvider: doc.videoProvider ?? "other",
-    transcript: doc.transcript ?? null,
-    transcriptSource: doc.transcriptSource ?? null,
-    summary: doc.summary ?? "",
-    summaryStatus: doc.summaryStatus ?? "none",
-    archived: doc.archived ?? false,
-    archivedAt: doc.archivedAt ? new Date(doc.archivedAt).toISOString() : null,
-    createdAt: new Date(doc.createdAt).toISOString(),
-    updatedAt: new Date(doc.updatedAt).toISOString(),
-  };
-}
+import { serializeDoc, type RawDocumentDoc } from "@/utils/helpers/serialize";
 
 function detectVideoProvider(url: string): "youtube" | "other" {
   if (url.includes("youtube.com") || url.includes("youtu.be")) return "youtube";
@@ -45,10 +24,9 @@ export async function getDocuments(topicId: string): Promise<Document[]> {
     archived: false,
   })
     .sort({ createdAt: -1 })
-    .lean();
+    .lean<RawDocumentDoc[]>();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (docs as any[]).map(serializeDoc);
+  return docs.map(serializeDoc);
 }
 
 export async function getArchivedDocuments(): Promise<Document[]> {
@@ -61,10 +39,9 @@ export async function getArchivedDocuments(): Promise<Document[]> {
     archived: true,
   })
     .sort({ archivedAt: -1 })
-    .lean();
+    .lean<RawDocumentDoc[]>();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (docs as any[]).map(serializeDoc);
+  return docs.map(serializeDoc);
 }
 
 export async function getDocument(id: string): Promise<Document | null> {
@@ -72,7 +49,7 @@ export async function getDocument(id: string): Promise<Document | null> {
   if (!session?.user?.id) return null;
 
   await connectDB();
-  const doc = await DocumentModel.findOne({ _id: id, userId: session.user.id }).lean();
+  const doc = await DocumentModel.findOne({ _id: id, userId: session.user.id }).lean<RawDocumentDoc>();
   if (!doc) return null;
 
   return serializeDoc(doc);
@@ -103,7 +80,7 @@ export async function createDocument(data: {
   });
 
   revalidatePath("/dashboard");
-  return { success: true, document: serializeDoc(doc) };
+  return { success: true, document: serializeDoc(doc as unknown as RawDocumentDoc) };
 }
 
 export async function updateDocument(

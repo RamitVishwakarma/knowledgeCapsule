@@ -21,6 +21,7 @@ import {
   Archive,
   RotateCcw,
   Download,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import type React from "react";
@@ -29,28 +30,27 @@ import { getDocument, updateDocument, archiveDocument, restoreDocument, deleteDo
 import { fetchTranscript, saveManualTranscript } from "@/app/actions/transcript";
 import { generateDocumentSummary } from "@/app/actions/summary";
 import { TiptapEditor } from "@/components/tiptap-editor";
+import { useEditField } from "@/utils/hooks/useEditField";
+import { extractVideoId } from "@/utils/helpers/youtube";
+import DOMPurify from "dompurify";
 
 interface DocumentDetailProps {
   onRefresh: () => void;
 }
 
 export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
-  const { selectedDocId, selectDocument } = useAppStore();
+  const selectedDocId = useAppStore((s) => s.selectedDocId);
+  const selectDocument = useAppStore((s) => s.selectDocument);
   const [doc, setDoc] = useState<Document | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const [showTranscript, setShowTranscript] = useState(false);
-  const [editingTitle, setEditingTitle] = useState(false);
-  const [editingShortDesc, setEditingShortDesc] = useState(false);
-  const [editingLongDesc, setEditingLongDesc] = useState(false);
-  const [editingTranscript, setEditingTranscript] = useState(false);
+  const titleField = useEditField();
+  const shortDescField = useEditField();
+  const longDescField = useEditField();
+  const transcriptField = useEditField();
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [showPermanentDeleteConfirm, setShowPermanentDeleteConfirm] = useState(false);
-
-  const [titleDraft, setTitleDraft] = useState("");
-  const [shortDescDraft, setShortDescDraft] = useState("");
-  const [longDescDraft, setLongDescDraft] = useState("");
-  const [transcriptDraft, setTranscriptDraft] = useState("");
 
   const [isSaving, startSaving] = useTransition();
   const [isGenerating, startGenerating] = useTransition();
@@ -58,17 +58,21 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
 
   useEffect(() => {
     if (!selectedDocId) return;
+    let cancelled = false;
     setIsLoading(true);
     getDocument(selectedDocId).then((d) => {
-      setDoc(d);
-      setIsLoading(false);
+      if (!cancelled) {
+        setDoc(d);
+        setIsLoading(false);
+      }
     });
+    return () => { cancelled = true; };
   }, [selectedDocId]);
 
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        <Loader2 className="size-8 text-primary animate-spin" />
       </div>
     );
   }
@@ -76,13 +80,7 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
   if (!doc) return null;
 
   const isArchived = doc.archived;
-
-  const getYouTubeId = (url: string) => {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-    return match?.[1] || null;
-  };
-
-  const ytId = getYouTubeId(doc.videoUrl);
+  const ytId = extractVideoId(doc.videoUrl);
 
   const handleSaveField = (field: string, value: string) => {
     startSaving(async () => {
@@ -90,7 +88,7 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
       if ("error" in result) {
         toast.error(result.error);
       } else {
-        setDoc((prev) => prev ? { ...prev, [field]: value } : prev);
+        setDoc((prev) => ({ ...prev!, [field]: value }));
         toast.success("Saved");
       }
     });
@@ -115,7 +113,7 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
       if ("error" in result) {
         toast.error(result.error);
       } else {
-        setDoc((prev) => prev ? { ...prev, archived: false, archivedAt: null } : prev);
+        setDoc((prev) => ({ ...prev!, archived: false, archivedAt: null }));
         toast.success("Restored from archive");
         onRefresh();
       }
@@ -142,9 +140,7 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
       if ("error" in result) {
         toast.error(result.error);
       } else {
-        setDoc((prev) =>
-          prev ? { ...prev, transcript: result.transcript, transcriptSource: "youtube" } : prev
-        );
+        setDoc((prev) => ({ ...prev!, transcript: result.transcript, transcriptSource: "youtube" }));
         toast.success("Transcript fetched!");
       }
     });
@@ -152,14 +148,12 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
 
   const handleSaveTranscript = () => {
     startSaving(async () => {
-      const result = await saveManualTranscript(doc.id, transcriptDraft);
+      const result = await saveManualTranscript(doc.id, transcriptField.draft);
       if ("error" in result) {
         toast.error(result.error);
       } else {
-        setDoc((prev) =>
-          prev ? { ...prev, transcript: transcriptDraft, transcriptSource: "manual" } : prev
-        );
-        setEditingTranscript(false);
+        setDoc((prev) => ({ ...prev!, transcript: transcriptField.draft, transcriptSource: "manual" }));
+        transcriptField.cancelEdit();
         toast.success("Transcript saved");
       }
     });
@@ -167,15 +161,13 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
 
   const handleGenerateSummary = () => {
     startGenerating(async () => {
-      setDoc((prev) => prev ? { ...prev, summaryStatus: "processing" } : prev);
+      setDoc((prev) => ({ ...prev!, summaryStatus: "processing" }));
       const result = await generateDocumentSummary(doc.id);
       if ("error" in result) {
-        setDoc((prev) => prev ? { ...prev, summaryStatus: "failed" } : prev);
+        setDoc((prev) => ({ ...prev!, summaryStatus: "failed" }));
         toast.error(result.error);
       } else {
-        setDoc((prev) =>
-          prev ? { ...prev, summary: result.summary, summaryStatus: "ready" } : prev
-        );
+        setDoc((prev) => ({ ...prev!, summary: result.summary, summaryStatus: "ready" }));
         toast.success("Summary generated!");
       }
     });
@@ -199,7 +191,7 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
           onClick={() => selectDocument(null)}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-[14px] transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="size-4" />
           {isArchived ? "Back to archive" : "Back to list"}
         </button>
         <div className="flex items-center gap-2">
@@ -215,14 +207,14 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
                 disabled={isSaving}
                 className="p-2 text-primary hover:bg-primary/5 rounded-lg transition-colors flex items-center gap-1.5 text-[13px] disabled:opacity-50"
               >
-                <RotateCcw className="w-4 h-4" />
+                <RotateCcw className="size-4" />
                 <span className="hidden sm:inline">Restore</span>
               </button>
               <button
                 onClick={() => setShowPermanentDeleteConfirm(true)}
                 className="p-2 text-destructive hover:bg-destructive/5 rounded-lg transition-colors flex items-center gap-1.5 text-[13px]"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="size-4" />
                 <span className="hidden sm:inline">Delete</span>
               </button>
             </>
@@ -232,7 +224,7 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
               className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors"
               title="Move to archive"
             >
-              <Archive className="w-4 h-4" />
+              <Archive className="size-4" />
             </button>
           )}
         </div>
@@ -241,7 +233,7 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
       {/* Archived banner */}
       {isArchived && (
         <div className="mx-6 mt-4 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200 flex items-center gap-3">
-          <Archive className="w-4 h-4 text-amber-600 shrink-0" />
+          <Archive className="size-4 text-amber-600 shrink-0" />
           <div className="flex-1">
             <p className="text-[13px] text-amber-800">This recording is archived.</p>
             <p className="text-[12px] text-amber-600">Restore it to move back to its topic, or delete it permanently.</p>
@@ -252,27 +244,27 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
       <div className="max-w-4xl mx-auto px-6 py-6 space-y-6">
         {/* Title */}
         <div>
-          {editingTitle && !isArchived ? (
+          {titleField.isEditing && !isArchived ? (
             <div className="flex items-center gap-2">
               <input
                 autoFocus
-                value={titleDraft}
-                onChange={(e) => setTitleDraft(e.target.value)}
+                value={titleField.draft}
+                onChange={(e) => titleField.setDraft(e.target.value)}
                 className="flex-1 px-3 py-2 bg-input-background border border-primary/30 rounded-lg outline-none text-foreground"
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") { handleSaveField("title", titleDraft); setEditingTitle(false); }
-                  if (e.key === "Escape") setEditingTitle(false);
+                  if (e.key === "Enter") { handleSaveField("title", titleField.draft); titleField.cancelEdit(); }
+                  if (e.key === "Escape") titleField.cancelEdit();
                 }}
               />
               <button
-                onClick={() => { handleSaveField("title", titleDraft); setEditingTitle(false); }}
+                onClick={() => { handleSaveField("title", titleField.draft); titleField.cancelEdit(); }}
                 disabled={isSaving}
                 className="p-2 bg-primary text-primary-foreground rounded-lg disabled:opacity-50"
               >
-                <Save className="w-4 h-4" />
+                <Save className="size-4" />
               </button>
-              <button onClick={() => setEditingTitle(false)} className="p-2 text-muted-foreground hover:text-foreground">
-                <X className="w-4 h-4" />
+              <button onClick={titleField.cancelEdit} className="p-2 text-muted-foreground hover:text-foreground">
+                <X className="size-4" />
               </button>
             </div>
           ) : (
@@ -280,10 +272,10 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
               <h1 className={`text-foreground flex-1 ${isArchived ? "opacity-70" : ""}`}>{doc.title}</h1>
               {!isArchived && (
                 <button
-                  onClick={() => { setTitleDraft(doc.title); setEditingTitle(true); }}
+                  onClick={() => titleField.startEdit(doc.title)}
                   className="p-1.5 text-muted-foreground/0 group-hover:text-muted-foreground hover:text-primary transition-colors"
                 >
-                  <Edit3 className="w-4 h-4" />
+                  <Edit3 className="size-4" />
                 </button>
               )}
             </div>
@@ -292,20 +284,20 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
 
         {/* Short description */}
         <div>
-          {editingShortDesc && !isArchived ? (
+          {shortDescField.isEditing && !isArchived ? (
             <div className="flex items-center gap-2">
               <input
                 autoFocus
-                value={shortDescDraft}
-                onChange={(e) => setShortDescDraft(e.target.value)}
+                value={shortDescField.draft}
+                onChange={(e) => shortDescField.setDraft(e.target.value)}
                 className="flex-1 px-3 py-2 bg-input-background border border-primary/30 rounded-lg text-[14px] outline-none"
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") { handleSaveField("shortDescription", shortDescDraft); setEditingShortDesc(false); }
-                  if (e.key === "Escape") setEditingShortDesc(false);
+                  if (e.key === "Enter") { handleSaveField("shortDescription", shortDescField.draft); shortDescField.cancelEdit(); }
+                  if (e.key === "Escape") shortDescField.cancelEdit();
                 }}
               />
               <button
-                onClick={() => { handleSaveField("shortDescription", shortDescDraft); setEditingShortDesc(false); }}
+                onClick={() => { handleSaveField("shortDescription", shortDescField.draft); shortDescField.cancelEdit(); }}
                 disabled={isSaving}
                 className="p-2 bg-primary text-primary-foreground rounded-lg disabled:opacity-50"
               >
@@ -316,7 +308,7 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
             <div
               className={`flex items-center gap-2 group ${!isArchived ? "cursor-pointer" : ""}`}
               onClick={() => {
-                if (!isArchived) { setShortDescDraft(doc.shortDescription); setEditingShortDesc(true); }
+                if (!isArchived) shortDescField.startEdit(doc.shortDescription);
               }}
             >
               <p className="text-muted-foreground text-[14px] flex-1">
@@ -342,7 +334,7 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
           ) : (
             <div className="aspect-video bg-muted flex flex-col items-center justify-center gap-3">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <Play className="w-8 h-8 text-primary" />
+                <Play className="size-8 text-primary" />
               </div>
               <p className="text-muted-foreground text-[14px]">Video preview unavailable</p>
               <a href={doc.videoUrl} target="_blank" rel="noopener noreferrer" className="text-primary text-[14px] flex items-center gap-1 hover:underline">
@@ -358,23 +350,29 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
             <h4 className="text-foreground text-[14px]">Notes for future me</h4>
             {!isArchived && (
               <button
-                onClick={() => { setLongDescDraft(doc.longDescription); setEditingLongDesc(!editingLongDesc); }}
+                onClick={() => {
+                  if (longDescField.isEditing) {
+                    longDescField.cancelEdit();
+                  } else {
+                    longDescField.startEdit(doc.longDescription);
+                  }
+                }}
                 className="text-muted-foreground hover:text-primary text-[13px] flex items-center gap-1"
               >
                 <Edit3 className="w-3.5 h-3.5" />
-                {editingLongDesc ? "Cancel" : "Edit"}
+                {longDescField.isEditing ? "Cancel" : "Edit"}
               </button>
             )}
           </div>
-          {editingLongDesc && !isArchived ? (
+          {longDescField.isEditing && !isArchived ? (
             <div>
               <TiptapEditor
-                content={longDescDraft}
-                onChange={setLongDescDraft}
+                content={longDescField.draft}
+                onChange={longDescField.setDraft}
                 minHeight="100px"
               />
               <button
-                onClick={() => { handleSaveField("longDescription", longDescDraft); setEditingLongDesc(false); }}
+                onClick={() => { handleSaveField("longDescription", longDescField.draft); longDescField.cancelEdit(); }}
                 disabled={isSaving}
                 className="mt-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-[13px] disabled:opacity-50"
               >
@@ -385,7 +383,7 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
             doc.longDescription ? (
               <div
                 className="prose prose-sm max-w-none text-foreground/80 text-[14px] leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: doc.longDescription }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(doc.longDescription) }}
               />
             ) : (
               <p className="text-muted-foreground text-[14px]">
@@ -411,12 +409,11 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
                 {doc.transcriptSource === "youtube" ? "YouTube" : doc.transcriptSource === "manual" ? "Manual" : "None"}
               </span>
             </div>
-            {showTranscript ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+            {showTranscript ? <ChevronUp className="size-4 text-muted-foreground" /> : <ChevronDown className="size-4 text-muted-foreground" />}
           </button>
 
           {showTranscript && (
             <div className="mt-3 pt-3 border-t border-border">
-              {/* Fetch transcript button for YouTube videos without transcript */}
               {!doc.transcript && doc.videoProvider === "youtube" && !isArchived && (
                 <div className="text-center py-4">
                   <p className="text-muted-foreground text-[13px] mb-3">No transcript yet. Try fetching it from YouTube.</p>
@@ -430,7 +427,7 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
                       {isFetchingTranscript ? "Fetching..." : "Fetch from YouTube"}
                     </button>
                     <button
-                      onClick={() => { setTranscriptDraft(""); setEditingTranscript(true); }}
+                      onClick={() => transcriptField.startEdit("")}
                       className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg text-[13px] inline-flex items-center gap-1.5"
                     >
                       <Edit3 className="w-3.5 h-3.5" /> Paste manually
@@ -443,7 +440,7 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
                 <div className="text-center py-4">
                   <p className="text-muted-foreground text-[13px] mb-3">No transcript available for this recording.</p>
                   <button
-                    onClick={() => { setTranscriptDraft(""); setEditingTranscript(true); }}
+                    onClick={() => transcriptField.startEdit("")}
                     className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg text-[13px] inline-flex items-center gap-1.5"
                   >
                     <Edit3 className="w-3.5 h-3.5" /> Paste transcript manually
@@ -452,11 +449,11 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
               )}
 
               {doc.transcript && (
-                editingTranscript && !isArchived ? (
+                transcriptField.isEditing && !isArchived ? (
                   <div>
                     <textarea
-                      value={transcriptDraft}
-                      onChange={(e) => setTranscriptDraft(e.target.value)}
+                      value={transcriptField.draft}
+                      onChange={(e) => transcriptField.setDraft(e.target.value)}
                       rows={8}
                       className="w-full px-3 py-2.5 bg-input-background border border-border rounded-lg text-[13px] outline-none focus:border-primary resize-none font-mono"
                     />
@@ -468,7 +465,7 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
                       >
                         {isSaving ? "Saving..." : "Save"}
                       </button>
-                      <button onClick={() => setEditingTranscript(false)} className="px-4 py-2 border border-border rounded-lg text-[13px]">
+                      <button onClick={transcriptField.cancelEdit} className="px-4 py-2 border border-border rounded-lg text-[13px]">
                         Cancel
                       </button>
                     </div>
@@ -481,7 +478,7 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
                     <div className="flex gap-2 mt-3">
                       {!isArchived && (
                         <button
-                          onClick={() => { setTranscriptDraft(doc.transcript ?? ""); setEditingTranscript(true); }}
+                          onClick={() => transcriptField.startEdit(doc.transcript ?? "")}
                           className="text-primary text-[13px] flex items-center gap-1 hover:underline"
                         >
                           <Edit3 className="w-3.5 h-3.5" /> Edit transcript
@@ -528,13 +525,13 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
 
           {doc.summaryStatus === "processing" ? (
             <div className="py-12 text-center">
-              <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-3" />
+              <Loader2 className="size-8 text-primary animate-spin mx-auto mb-3" />
               <p className="text-muted-foreground text-[14px]">Generating summary from transcript...</p>
               <p className="text-muted-foreground/50 text-[12px] mt-1">This usually takes a few seconds</p>
             </div>
           ) : doc.summaryStatus === "failed" ? (
             <div className="py-8 text-center">
-              <AlertCircle className="w-8 h-8 text-destructive/50 mx-auto mb-3" />
+              <AlertCircle className="size-8 text-destructive/50 mx-auto mb-3" />
               <p className="text-foreground text-[14px] mb-1">Summary generation failed</p>
               <p className="text-muted-foreground text-[13px] mb-4">The transcript may be too short or the API request failed.</p>
               {!isArchived && doc.transcript && (
@@ -551,7 +548,7 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
             <TiptapEditor
               content={doc.summary}
               onChange={(html) => {
-                setDoc((prev) => prev ? { ...prev, summary: html } : prev);
+                setDoc((prev) => ({ ...prev!, summary: html }));
                 handleSaveField("summary", html);
               }}
               editable={!isArchived}
@@ -559,7 +556,7 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
             />
           ) : (
             <div className="py-8 text-center">
-              <FileText className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
+              <FileText className="size-8 text-muted-foreground/30 mx-auto mb-3" />
               <p className="text-muted-foreground text-[14px] mb-1">No summary yet</p>
               <p className="text-muted-foreground/60 text-[13px] mb-4">
                 {doc.transcript ? "Generate a summary from the available transcript." : "Add a transcript first to generate a summary."}
@@ -570,7 +567,7 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
                   disabled={isGenerating}
                   className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-[13px] inline-flex items-center gap-1.5 disabled:opacity-50"
                 >
-                  <SparklesIcon className="w-3.5 h-3.5" /> Generate summary
+                  <Sparkles className="w-3.5 h-3.5" /> Generate summary
                 </button>
               )}
             </div>
@@ -582,8 +579,8 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
       {showArchiveConfirm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowArchiveConfirm(false)}>
           <div className="bg-card rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center mb-4">
-              <Archive className="w-6 h-6 text-amber-600" />
+            <div className="size-12 rounded-xl bg-amber-50 flex items-center justify-center mb-4">
+              <Archive className="size-6 text-amber-600" />
             </div>
             <h3 className="text-foreground mb-2">Archive this recording?</h3>
             <p className="text-muted-foreground text-[14px] mb-5">
@@ -605,8 +602,8 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
       {showPermanentDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowPermanentDeleteConfirm(false)}>
           <div className="bg-card rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center mb-4">
-              <Trash2 className="w-6 h-6 text-destructive" />
+            <div className="size-12 rounded-xl bg-red-50 flex items-center justify-center mb-4">
+              <Trash2 className="size-6 text-destructive" />
             </div>
             <h3 className="text-foreground mb-2">Permanently delete?</h3>
             <p className="text-muted-foreground text-[14px] mb-5">
@@ -624,15 +621,5 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
         </div>
       )}
     </div>
-  );
-}
-
-function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
-      <path d="M20 3v4" />
-      <path d="M22 5h-4" />
-    </svg>
   );
 }

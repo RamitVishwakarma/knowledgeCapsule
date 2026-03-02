@@ -24,7 +24,10 @@ interface DocumentListProps {
 }
 
 export function DocumentList({ onRefresh }: DocumentListProps) {
-  const { selectedTopicId, viewMode, selectDocument, setSidebarOpen } = useAppStore();
+  const selectedTopicId = useAppStore((s) => s.selectedTopicId);
+  const viewMode = useAppStore((s) => s.viewMode);
+  const selectDocument = useAppStore((s) => s.selectDocument);
+  const setSidebarOpen = useAppStore((s) => s.setSidebarOpen);
 
   if (viewMode === "archived") {
     return <ArchivedList onRefresh={onRefresh} />;
@@ -61,11 +64,15 @@ function ActiveList({
       setDocuments([]);
       return;
     }
+    let cancelled = false;
     setIsLoading(true);
     getDocuments(selectedTopicId).then((docs) => {
-      setDocuments(docs);
-      setIsLoading(false);
+      if (!cancelled) {
+        setDocuments(docs);
+        setIsLoading(false);
+      }
     });
+    return () => { cancelled = true; };
   }, [selectedTopicId]);
 
   const handleSubmit = () => {
@@ -250,17 +257,21 @@ function ActiveList({
 }
 
 function ArchivedList({ onRefresh }: { onRefresh: () => void }) {
-  const { selectDocument } = useAppStore();
+  const selectDocument = useAppStore((s) => s.selectDocument);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
+    let cancelled = false;
     getArchivedDocuments().then((docs) => {
-      setDocuments(docs);
-      setIsLoading(false);
+      if (!cancelled) {
+        setDocuments(docs);
+        setIsLoading(false);
+      }
     });
+    return () => { cancelled = true; };
   }, []);
 
   const handleRestore = (id: string) => {

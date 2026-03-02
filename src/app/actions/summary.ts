@@ -7,6 +7,7 @@ import { Document } from "@/lib/models/Document";
 import { generateSummary } from "@/lib/services/summarizer";
 import { revalidatePath } from "next/cache";
 import { marked } from "marked";
+import { APIError } from "groq-sdk";
 
 export async function generateDocumentSummary(
   documentId: string
@@ -39,6 +40,13 @@ export async function generateDocumentSummary(
   } catch (err) {
     console.error("Summary generation failed:", err);
     await Document.findByIdAndUpdate(documentId, { summaryStatus: "failed" });
+
+    if (err instanceof APIError) {
+      if (err.status === 429) return { error: "Rate limit reached. Please wait a moment and try again." };
+      if (err.status === 401) return { error: "API key is invalid or missing." };
+      return { error: `API error (${err.status}): ${err.message}` };
+    }
+
     return { error: "Summary generation failed. Please try again." };
   }
 }
