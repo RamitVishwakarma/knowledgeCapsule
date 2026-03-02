@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
 import { Toaster } from "sonner";
+import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
   title: "Knowledge Capsule",
@@ -15,8 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
-        <Toaster position="bottom-right" richColors />
+        <Providers>
+          {children}
+          <Toaster position="bottom-right" richColors />
+        </Providers>
       </body>
     </html>
   );
