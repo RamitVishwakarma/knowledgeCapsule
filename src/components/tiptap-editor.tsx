@@ -4,6 +4,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Bold, Italic, List, Heading2 } from "lucide-react";
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 interface TiptapEditorProps {
   content: string;
@@ -43,57 +44,49 @@ export function TiptapEditor({
   if (!editor) return null;
 
   return (
-    <div className="border border-border rounded-lg overflow-hidden">
+    <div className="border-border overflow-hidden rounded-lg border">
       {editable && (
-        <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-border bg-muted/30">
-          <button
+        <div className="border-border bg-muted/30 flex items-center gap-0.5 border-b px-2 py-1.5">
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => editor.chain().focus().toggleBold().run()}
-            className={`p-1.5 rounded hover:bg-accent transition-colors ${
-              editor.isActive("bold")
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground"
-            }`}
+            className={`size-7 ${editor.isActive("bold") ? "bg-accent text-foreground" : "text-muted-foreground"}`}
             title="Bold"
           >
-            <Bold className="w-3.5 h-3.5" />
-          </button>
-          <button
+            <Bold className="size-3.5" />
+          </Button>
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={`p-1.5 rounded hover:bg-accent transition-colors ${
-              editor.isActive("italic")
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground"
-            }`}
+            className={`size-7 ${editor.isActive("italic") ? "bg-accent text-foreground" : "text-muted-foreground"}`}
             title="Italic"
           >
-            <Italic className="w-3.5 h-3.5" />
-          </button>
-          <button
+            <Italic className="size-3.5" />
+          </Button>
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            className={`p-1.5 rounded hover:bg-accent transition-colors ${
-              editor.isActive("heading", { level: 2 })
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground"
-            }`}
+            className={`size-7 ${editor.isActive("heading", { level: 2 }) ? "bg-accent text-foreground" : "text-muted-foreground"}`}
             title="Heading"
           >
-            <Heading2 className="w-3.5 h-3.5" />
-          </button>
-          <button
+            <Heading2 className="size-3.5" />
+          </Button>
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={`p-1.5 rounded hover:bg-accent transition-colors ${
-              editor.isActive("bulletList")
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground"
-            }`}
+            className={`size-7 ${editor.isActive("bulletList") ? "bg-accent text-foreground" : "text-muted-foreground"}`}
             title="Bullet list"
           >
-            <List className="w-3.5 h-3.5" />
-          </button>
+            <List className="size-3.5" />
+          </Button>
         </div>
       )}
       <div className="px-3 py-2.5">

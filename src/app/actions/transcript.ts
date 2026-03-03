@@ -1,8 +1,6 @@
 "use server";
 
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { connectDB } from "@/lib/db/mongoose";
+import { requireAuthAndDB } from "@/app/actions/utils";
 import { Document } from "@/lib/models/Document";
 import { fetchYouTubeTranscript } from "@/lib/services/transcript";
 import { revalidatePath } from "next/cache";
@@ -10,11 +8,10 @@ import { revalidatePath } from "next/cache";
 export async function fetchTranscript(
   documentId: string
 ): Promise<{ success: true; transcript: string } | { error: string }> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  const userId = await requireAuthAndDB();
+  if (!userId) return { error: "Unauthorized" };
 
-  await connectDB();
-  const doc = await Document.findOne({ _id: documentId, userId: session.user.id });
+  const doc = await Document.findOne({ _id: documentId, userId });
   if (!doc) return { error: "Document not found" };
 
   if (doc.videoProvider !== "youtube") {
@@ -42,14 +39,13 @@ export async function saveManualTranscript(
   documentId: string,
   transcript: string
 ): Promise<{ success: true } | { error: string }> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  const userId = await requireAuthAndDB();
+  if (!userId) return { error: "Unauthorized" };
 
   if (!transcript.trim()) return { error: "Transcript cannot be empty" };
 
-  await connectDB();
   const doc = await Document.findOneAndUpdate(
-    { _id: documentId, userId: session.user.id },
+    { _id: documentId, userId },
     { transcript: transcript.trim(), transcriptSource: "manual" }
   );
   if (!doc) return { error: "Document not found" };

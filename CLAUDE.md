@@ -84,3 +84,12 @@ Documents can be archived (soft delete) or permanently deleted. `viewMode` in th
 - Do not use any type asertions anywhere unless necessary.
 - DO NOT ASSUME ANYTHING ALWAYS ASK QUESTIONS
 - All imports should use @ imports only
+- No component should be above 300 lines.
+- No function should be responsible to do multiple things
+- Each function should be responsible to do atomic things only.
+- All the buttons should come from a variant wrapping Button.tsx from the ui folder. No html button usage.
+- No img tag is allowed in the codebase use npm i sharp and the Image tag only.
+- No anchor tags allowed only Link tags are allowed.
+- Keep components simple do not overdo a component.
+- No DRY violations.
+- No YAGNI violations.

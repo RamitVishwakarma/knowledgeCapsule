@@ -1,19 +1,8 @@
 import mongoose, { Schema, type Model } from "mongoose";
+import type { DocumentBase } from "@/lib/types";
 
-export interface IDocumentDocument {
+export interface IDocumentDocument extends DocumentBase {
   _id: mongoose.Types.ObjectId;
-  userId: string;
-  topicId: string;
-  title: string;
-  shortDescription: string;
-  longDescription: string;
-  videoUrl: string;
-  videoProvider: "youtube" | "other";
-  transcript: string | null;
-  transcriptSource: "youtube" | "manual" | null;
-  summary: string;
-  summaryStatus: "none" | "processing" | "ready" | "failed";
-  archived: boolean;
   archivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
@@ -45,5 +34,4 @@ const DocumentSchema = new Schema<IDocumentDocument>(
 DocumentSchema.index({ userId: 1, topicId: 1 });
 
 export const Document: Model<IDocumentDocument> =
-  mongoose.models.KCDocument ||
-  mongoose.model<IDocumentDocument>("KCDocument", DocumentSchema);
+  mongoose.models.KCDocument || mongoose.model<IDocumentDocument>("KCDocument", DocumentSchema);

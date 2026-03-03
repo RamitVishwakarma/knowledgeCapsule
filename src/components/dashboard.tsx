@@ -8,6 +8,7 @@ import { Menu } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Topic } from "@/lib/types";
+import { Button } from "@/components/ui/button";
 
 interface DashboardProps {
   initialTopics: Topic[];
@@ -33,21 +34,20 @@ export function Dashboard({ initialTopics, initialArchivedCount }: DashboardProp
   const refreshData = () => router.refresh();
 
   return (
-    <div className="h-screen flex bg-background overflow-hidden">
+    <div className="bg-background flex h-screen overflow-hidden">
       <Sidebar
         topics={topics}
         archivedCount={archivedCount}
         onTopicsChange={setTopics}
-        onArchivedCountChange={setArchivedCount}
         onRefresh={refreshData}
       />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex min-w-0 flex-1 flex-col">
         {/* Mobile header */}
-        <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-border bg-card">
-          <button onClick={toggleSidebar} className="p-2 hover:bg-accent rounded-lg">
-            <Menu className="w-5 h-5 text-foreground" />
-          </button>
-          <span className="text-foreground text-[14px]">Knowledge Capsule</span>
+        <div className="border-border bg-card flex items-center gap-3 border-b px-4 py-3 md:hidden">
+          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="size-9">
+            <Menu className="text-foreground h-5 w-5" />
+          </Button>
+          <span className="text-foreground text-sm">Knowledge Capsule</span>
         </div>
         {selectedDocId ? (
           <DocumentDetail onRefresh={refreshData} />

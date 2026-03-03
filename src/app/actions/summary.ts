@@ -1,8 +1,6 @@
 "use server";
 
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { connectDB } from "@/lib/db/mongoose";
+import { requireAuthAndDB } from "@/app/actions/utils";
 import { Document } from "@/lib/models/Document";
 import { generateSummary } from "@/lib/services/summarizer";
 import { revalidatePath } from "next/cache";
@@ -12,11 +10,10 @@ import { APIError } from "groq-sdk";
 export async function generateDocumentSummary(
   documentId: string
 ): Promise<{ success: true; summary: string } | { error: string }> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  const userId = await requireAuthAndDB();
+  if (!userId) return { error: "Unauthorized" };
 
-  await connectDB();
-  const doc = await Document.findOne({ _id: documentId, userId: session.user.id });
+  const doc = await Document.findOne({ _id: documentId, userId });
   if (!doc) return { error: "Document not found" };
 
   if (!doc.transcript) {
@@ -28,7 +25,7 @@ export async function generateDocumentSummary(
 
   try {
     const markdown = await generateSummary(doc.transcript, doc.title);
-    const summary = marked.parse(markdown) as string;
+    const summary = await marked.parse(markdown);
 
     await Document.findByIdAndUpdate(documentId, {
       summary,
@@ -42,7 +39,8 @@ export async function generateDocumentSummary(
     await Document.findByIdAndUpdate(documentId, { summaryStatus: "failed" });
 
     if (err instanceof APIError) {
-      if (err.status === 429) return { error: "Rate limit reached. Please wait a moment and try again." };
+      if (err.status === 429)
+        return { error: "Rate limit reached. Please wait a moment and try again." };
       if (err.status === 401) return { error: "API key is invalid or missing." };
       return { error: `API error (${err.status}): ${err.message}` };
     }

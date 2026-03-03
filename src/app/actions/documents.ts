@@ -1,8 +1,6 @@
 "use server";
 
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { connectDB } from "@/lib/db/mongoose";
+import { requireAuthAndDB } from "@/app/actions/utils";
 import { Document as DocumentModel } from "@/lib/models/Document";
 import { revalidatePath } from "next/cache";
 import type { Document } from "@/lib/types";
@@ -14,13 +12,12 @@ function detectVideoProvider(url: string): "youtube" | "other" {
 }
 
 export async function getDocuments(topicId: string): Promise<Document[]> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return [];
+  const userId = await requireAuthAndDB();
+  if (!userId) return [];
 
-  await connectDB();
   const docs = await DocumentModel.find({
     topicId,
-    userId: session.user.id,
+    userId,
     archived: false,
   })
     .sort({ createdAt: -1 })
@@ -30,12 +27,11 @@ export async function getDocuments(topicId: string): Promise<Document[]> {
 }
 
 export async function getArchivedDocuments(): Promise<Document[]> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return [];
+  const userId = await requireAuthAndDB();
+  if (!userId) return [];
 
-  await connectDB();
   const docs = await DocumentModel.find({
-    userId: session.user.id,
+    userId,
     archived: true,
   })
     .sort({ archivedAt: -1 })
@@ -45,11 +41,10 @@ export async function getArchivedDocuments(): Promise<Document[]> {
 }
 
 export async function getDocument(id: string): Promise<Document | null> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return null;
+  const userId = await requireAuthAndDB();
+  if (!userId) return null;
 
-  await connectDB();
-  const doc = await DocumentModel.findOne({ _id: id, userId: session.user.id }).lean<RawDocumentDoc>();
+  const doc = await DocumentModel.findOne({ _id: id, userId }).lean<RawDocumentDoc>();
   if (!doc) return null;
 
   return serializeDoc(doc);
@@ -62,15 +57,14 @@ export async function createDocument(data: {
   longDescription: string;
   videoUrl: string;
 }): Promise<{ success: true; document: Document } | { error: string }> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  const userId = await requireAuthAndDB();
+  if (!userId) return { error: "Unauthorized" };
 
   if (!data.title.trim()) return { error: "Title is required" };
   if (!data.videoUrl.trim()) return { error: "Video URL is required" };
 
-  await connectDB();
   const doc = await DocumentModel.create({
-    userId: session.user.id,
+    userId,
     topicId: data.topicId,
     title: data.title.trim(),
     shortDescription: data.shortDescription.trim(),
@@ -80,7 +74,7 @@ export async function createDocument(data: {
   });
 
   revalidatePath("/dashboard");
-  return { success: true, document: serializeDoc(doc as unknown as RawDocumentDoc) };
+  return { success: true, document: serializeDoc(doc.toObject() as RawDocumentDoc) };
 }
 
 export async function updateDocument(
@@ -96,29 +90,22 @@ export async function updateDocument(
     summaryStatus: "none" | "processing" | "ready" | "failed";
   }>
 ): Promise<{ success: true } | { error: string }> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  const userId = await requireAuthAndDB();
+  if (!userId) return { error: "Unauthorized" };
 
-  await connectDB();
-  const doc = await DocumentModel.findOneAndUpdate(
-    { _id: id, userId: session.user.id },
-    updates
-  );
+  const doc = await DocumentModel.findOneAndUpdate({ _id: id, userId }, updates);
   if (!doc) return { error: "Document not found" };
 
   revalidatePath("/dashboard");
   return { success: true };
 }
 
-export async function archiveDocument(
-  id: string
-): Promise<{ success: true } | { error: string }> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+export async function archiveDocument(id: string): Promise<{ success: true } | { error: string }> {
+  const userId = await requireAuthAndDB();
+  if (!userId) return { error: "Unauthorized" };
 
-  await connectDB();
   const doc = await DocumentModel.findOneAndUpdate(
-    { _id: id, userId: session.user.id },
+    { _id: id, userId },
     { archived: true, archivedAt: new Date() }
   );
   if (!doc) return { error: "Document not found" };
@@ -127,15 +114,12 @@ export async function archiveDocument(
   return { success: true };
 }
 
-export async function restoreDocument(
-  id: string
-): Promise<{ success: true } | { error: string }> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+export async function restoreDocument(id: string): Promise<{ success: true } | { error: string }> {
+  const userId = await requireAuthAndDB();
+  if (!userId) return { error: "Unauthorized" };
 
-  await connectDB();
   const doc = await DocumentModel.findOneAndUpdate(
-    { _id: id, userId: session.user.id },
+    { _id: id, userId },
     { archived: false, archivedAt: null }
   );
   if (!doc) return { error: "Document not found" };
@@ -144,14 +128,11 @@ export async function restoreDocument(
   return { success: true };
 }
 
-export async function deleteDocument(
-  id: string
-): Promise<{ success: true } | { error: string }> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return { error: "Unauthorized" };
+export async function deleteDocument(id: string): Promise<{ success: true } | { error: string }> {
+  const userId = await requireAuthAndDB();
+  if (!userId) return { error: "Unauthorized" };
 
-  await connectDB();
-  const doc = await DocumentModel.findOneAndDelete({ _id: id, userId: session.user.id });
+  const doc = await DocumentModel.findOneAndDelete({ _id: id, userId });
   if (!doc) return { error: "Document not found" };
 
   revalidatePath("/dashboard");

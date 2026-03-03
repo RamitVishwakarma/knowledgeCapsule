@@ -10,8 +10,7 @@ export interface Topic {
   updatedAt: string;
 }
 
-export interface Document {
-  id: string;
+export interface DocumentBase {
   userId: string;
   topicId: string;
   title: string;
@@ -24,9 +23,19 @@ export interface Document {
   summary: string;
   summaryStatus: "none" | "processing" | "ready" | "failed";
   archived: boolean;
+}
+
+export interface Document extends DocumentBase {
+  id: string;
   archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export type ViewMode = "active" | "archived";
+
+export interface SelectOptions {
+  label: string | React.ReactNode;
+  value: string | number;
+  [key: string]: unknown;
+}
