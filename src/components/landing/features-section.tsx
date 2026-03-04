@@ -14,8 +14,8 @@ const MEDIUM_CARDS = [
     preview: (
       <div className="border-border/50 bg-background/60 mt-5 rounded-lg border p-3">
         <div className="mb-2 flex items-center gap-2">
-          <div className="flex h-5 w-5 items-center justify-center rounded bg-blue-100">
-            <FileText className="h-3 w-3 text-blue-500" />
+          <div className="flex size-5 items-center justify-center rounded bg-blue-100">
+            <FileText className="size-3 text-blue-500" />
           </div>
           <span className="text-muted-foreground text-[10px]">Auto-generated summary</span>
         </div>
@@ -37,8 +37,8 @@ const MEDIUM_CARDS = [
     preview: (
       <div className="border-border/50 bg-background/60 mt-5 rounded-lg border p-3">
         <div className="bg-linear-to-brrom-gray-100 flex aspect-video items-center justify-center rounded to-gray-50">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md">
-            <Play className="ml-0.5 h-4 w-4 text-purple-500" />
+          <div className="flex size-10 items-center justify-center rounded-full bg-white shadow-md">
+            <Play className="ml-0.5 size-4 text-purple-500" />
           </div>
         </div>
       </div>
@@ -108,10 +108,10 @@ export function FeaturesSection() {
                 <div className="flex-1">
                   <div className="mb-5 flex items-center gap-3">
                     <motion.div
-                      className="relative z-10 flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-blue-500 to-indigo-600 shadow-md"
+                      className="relative z-10 flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-blue-500 to-indigo-600 shadow-md"
                       whileHover={{ rotate: 3 }}
                     >
-                      <BookOpen className="h-6 w-6 text-white" />
+                      <BookOpen className="size-6 text-white" />
                     </motion.div>
                     <span className="rounded-lg bg-linear-to-r from-blue-500 to-indigo-600 p-2 text-[10px] tracking-wide text-white uppercase shadow-lg">
                       Core feature
@@ -136,7 +136,7 @@ export function FeaturesSection() {
                       className={`mb-1 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm ${i === 0 ? "bg-primary/8 text-foreground border-primary border-l-2" : "text-muted-foreground"}`}
                     >
                       <div
-                        className={`h-2 w-2 rounded-full ${i === 0 ? "bg-primary" : "bg-muted-foreground/30"}`}
+                        className={`size-2 rounded-full ${i === 0 ? "bg-primary" : "bg-muted-foreground/30"}`}
                       />
                       {topic}
                       <span className="text-muted-foreground/50 ml-auto text-[10px]">
@@ -168,10 +168,10 @@ export function FeaturesSection() {
                 <div className="relative">
                   <div className="mb-5 flex items-center gap-3">
                     <motion.div
-                      className={`h-12 w-12 rounded-xl bg-linear-to-br ${f.accent} flex items-center justify-center shadow-lg transition-all duration-300 group-hover:shadow-xl`}
+                      className={`size-12 rounded-xl bg-linear-to-br ${f.accent} flex items-center justify-center shadow-lg transition-all duration-300 group-hover:shadow-xl`}
                       whileHover={{ rotate: 3 }}
                     >
-                      <f.icon className="h-5 w-5 text-white" />
+                      <f.icon className="size-5 text-white" />
                     </motion.div>
                     {f.badge && (
                       <span className="rounded-full border border-blue-100/50 bg-blue-50 px-2 py-0.5 text-[10px] tracking-wide text-blue-500 uppercase">
@@ -206,10 +206,10 @@ export function FeaturesSection() {
                   <div className={`absolute inset-0 bg-linear-to-br ${f.bg} pointer-events-none`} />
                   <div className="relative">
                     <motion.div
-                      className={`h-10 w-10 rounded-xl bg-linear-to-br ${f.accent} mb-4 flex items-center justify-center shadow-md transition-all duration-300 group-hover:shadow-lg`}
+                      className={`size-10 rounded-xl bg-linear-to-br ${f.accent} mb-4 flex items-center justify-center shadow-md transition-all duration-300 group-hover:shadow-lg`}
                       whileHover={{ rotate: 3 }}
                     >
-                      <f.icon className="h-4 w-4 text-white" />
+                      <f.icon className="size-4 text-white" />
                     </motion.div>
                     <h3 className="text-foreground mb-1.5">{f.title}</h3>
                     <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>

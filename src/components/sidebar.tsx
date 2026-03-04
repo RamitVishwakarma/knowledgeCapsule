@@ -36,7 +36,9 @@ export function Sidebar({ topics, archivedCount, onTopicsChange, onRefresh }: Si
       const result = await createTopic(newName.trim());
       handleActionResult(result, async () => {
         const fresh = await getTopics();
-        onTopicsChange(fresh);
+        if (fresh.status && fresh.data) {
+          onTopicsChange(fresh.data);
+        }
         setNewName("");
         setShowAdd(false);
       });

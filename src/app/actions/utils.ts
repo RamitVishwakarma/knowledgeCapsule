@@ -6,7 +6,7 @@ import { connectDB } from "@/lib/db/mongoose";
  * Ensures the user is authenticated and the database is connected.
  * Returns the userId if successful, or null if unauthorized.
  */
-export async function requireAuthAndDB(): Promise<string | null> {
+export async function requireAuthAndConnectDB(): Promise<string | null> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return null;
 

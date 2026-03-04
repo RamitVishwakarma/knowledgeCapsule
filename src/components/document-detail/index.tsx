@@ -54,9 +54,9 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
   useEffect(() => {
     if (!selectedDocId) return;
     let cancelled = false;
-    getDocument(selectedDocId).then((d) => {
+    getDocument(selectedDocId).then((res) => {
       if (!cancelled) {
-        setDoc(d);
+        setDoc(res.data || null);
         setLoadedDocId(selectedDocId);
       }
     });
@@ -128,7 +128,11 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
       toast.info("Fetching transcript...");
       const result = await fetchTranscript(doc.id);
       handleActionResult(result, (r) => {
-        setDoc((prev) => ({ ...prev!, transcript: r.transcript, transcriptSource: "youtube" }));
+        setDoc((prev) => ({
+          ...prev!,
+          transcript: r.data!.transcript,
+          transcriptSource: "youtube",
+        }));
         toast.success("Transcript fetched!");
       });
     });
@@ -153,11 +157,11 @@ export function DocumentDetail({ onRefresh }: DocumentDetailProps) {
     startGenerating(async () => {
       setDoc((prev) => ({ ...prev!, summaryStatus: "processing" }));
       const result = await generateDocumentSummary(doc.id);
-      if ("error" in result) {
+      if (!result.status) {
         setDoc((prev) => ({ ...prev!, summaryStatus: "failed" }));
       }
       handleActionResult(result, (r) => {
-        setDoc((prev) => ({ ...prev!, summary: r.summary, summaryStatus: "ready" }));
+        setDoc((prev) => ({ ...prev!, summary: r.data!.summary, summaryStatus: "ready" }));
         toast.success("Summary generated!");
       });
     });

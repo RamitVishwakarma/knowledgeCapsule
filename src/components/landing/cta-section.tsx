@@ -27,7 +27,7 @@ export function CTASection({ onSignIn }: CTASectionProps) {
         {Array.from({ length: 8 }).map((_, i) => (
           <motion.div
             key={i}
-            className="bg-primary/30 absolute h-1 w-1 rounded-full"
+            className="bg-primary/30 absolute size-1 rounded-full"
             style={{ left: `${15 + i * 10}%`, top: `${20 + (i % 3) * 25}%` }}
             animate={{ opacity: [0.2, 0.6, 0.2], y: [0, -20, 0] }}
             transition={{ duration: 3 + i * 0.5, repeat: Infinity, delay: i * 0.4 }}
@@ -60,7 +60,7 @@ export function CTASection({ onSignIn }: CTASectionProps) {
             >
               <ShineSweep repeatDelay={5} />
               <span className="relative z-10">Start your capsule</span>
-              <ArrowRight className="relative z-10 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              <ArrowRight className="relative z-10 size-4 transition-transform group-hover:translate-x-0.5" />
             </Button>
           </motion.div>
         </motion.div>

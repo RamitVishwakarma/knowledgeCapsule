@@ -92,7 +92,7 @@ const FormInput: React.FC<FormInputProps> = memo(
                 <>
                   {error && (
                     <div className="flex items-center gap-x-1">
-                      <AlertCircle className="h-4 w-4 text-red-500" />
+                      <AlertCircle className="size-4 text-red-500" />
                       <FormMessage />
                     </div>
                   )}

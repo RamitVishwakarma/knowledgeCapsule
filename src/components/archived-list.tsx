@@ -22,9 +22,9 @@ export function ArchivedList({ onRefresh }: ArchivedListProps) {
 
   useEffect(() => {
     let cancelled = false;
-    getArchivedDocuments().then((docs) => {
-      if (!cancelled) {
-        setDocuments(docs);
+    getArchivedDocuments().then((res) => {
+      if (!cancelled && res.status) {
+        setDocuments(res.data || []);
         setIsLoading(false);
       }
     });

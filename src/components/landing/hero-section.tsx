@@ -120,7 +120,7 @@ export function HeroSection({ onSignIn }: HeroSectionProps) {
                     animate={{ x: ["-200%", "200%"] }}
                     transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
                   />
-                  <CirclePlay className="relative z-10 h-5 w-5" />
+                  <CirclePlay className="relative z-10 size-5" />
                   <span className="relative z-10">Start your capsule</span>
                 </Button>
               </motion.div>

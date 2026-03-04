@@ -40,9 +40,9 @@ export function HeroDashboardPreview() {
         >
           {/* Title bar */}
           <div className="border-border from-muted/80 to-muted/40 flex items-center gap-2 border-b bg-linear-to-r px-4 py-3">
-            <div className="bg-macos-close h-3 w-3 rounded-full"></div>
-            <div className="bg-macos-min h-3 w-3 rounded-full"></div>
-            <div className="bg-macos-max h-3 w-3 rounded-full"></div>
+            <div className="bg-macos-close size-3 rounded-full"></div>
+            <div className="bg-macos-min size-3 rounded-full"></div>
+            <div className="bg-macos-max size-3 rounded-full"></div>
             <span className="text-muted-foreground ml-3 text-sm">
               Knowledge Capsule — Your Knowledge Timeline
             </span>
@@ -116,8 +116,8 @@ export function HeroDashboardPreview() {
                     transition={{ delay: 1.4 + i * 0.2 }}
                     className="flex items-center gap-4 rounded-xl border border-black/5 bg-white p-4 transition-shadow hover:shadow-md"
                   >
-                    <div className="from-primary/10 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-linear-to-br to-amber-100">
-                      <Play className="text-primary h-4 w-4" />
+                    <div className="from-primary/10 flex size-10 shrink-0 items-center justify-center rounded-lg bg-linear-to-br to-amber-100">
+                      <Play className="text-primary size-4" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="text-foreground truncate text-sm">{d.title}</div>

@@ -47,7 +47,7 @@ export function ProblemSection() {
                 <motion.div
                   animate={{ rotate: [-2, 2, -2] }}
                   transition={{ duration: 0.4, repeat: Infinity, repeatDelay: 3 }}
-                  className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl border border-red-200/60 bg-red-100"
+                  className="mb-4 flex size-10 items-center justify-center rounded-xl border border-red-200/60 bg-red-100"
                 >
                   <span className="text-destructive text-lg">✕</span>
                 </motion.div>
@@ -67,7 +67,7 @@ export function ProblemSection() {
                       transition={{ delay: 0.3 + i * 0.1 }}
                       className="flex items-start gap-2.5"
                     >
-                      <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-red-200/50 bg-red-100">
+                      <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border border-red-200/50 bg-red-100">
                         <span className="text-[10px] text-red-400">✕</span>
                       </div>
                       {item}
@@ -89,7 +89,7 @@ export function ProblemSection() {
             <div className="from-primary/15 to-primary/5 absolute -inset-1 rounded-2xl bg-linear-to-br via-amber-300/10 opacity-60 blur-xl transition-opacity duration-500 group-hover:opacity-100" />
             <div className="border-primary/20 relative rounded-2xl border-2 bg-linear-to-br from-white via-orange-50/30 to-amber-50/40 p-7 shadow-[0_12px_40px_-8px_rgba(27,107,64,0.1),0_4px_16px_-4px_rgba(245,146,27,0.08)] backdrop-blur-sm">
               <div className="via-primary/40 absolute top-0 right-6 left-6 h-0.5 rounded-full bg-linear-to-r from-transparent to-transparent" />
-              <div className="bg-primary/10 border-primary/20 mb-4 flex h-10 w-10 items-center justify-center rounded-xl border">
+              <div className="bg-primary/10 border-primary/20 mb-4 flex size-10 items-center justify-center rounded-xl border">
                 <span className="text-primary text-lg">✓</span>
               </div>
               <h3 className="text-foreground mb-4">With Knowledge Capsule</h3>
@@ -108,7 +108,7 @@ export function ProblemSection() {
                     transition={{ delay: 0.45 + i * 0.1 }}
                     className="flex items-start gap-2.5"
                   >
-                    <div className="bg-primary/10 border-primary/20 mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border">
+                    <div className="bg-primary/10 border-primary/20 mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border">
                       <span className="text-primary text-[10px]">✓</span>
                     </div>
                     {item}

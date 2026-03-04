@@ -1,21 +1,13 @@
 import { toast } from "sonner";
-
-function isActionError(result: unknown): result is { error: string } {
-  return (
-    typeof result === "object" &&
-    result !== null &&
-    "error" in result &&
-    typeof (result as Record<string, unknown>).error === "string"
-  );
-}
+import type { ActionResponse } from "./response";
 
 export function handleActionResult<T>(
-  result: { error: string } | T,
-  onSuccess: (result: T) => void
+  result: ActionResponse<T>,
+  onSuccess: (result: ActionResponse<T>) => void
 ): void {
-  if (isActionError(result)) {
-    toast.error(result.error);
+  if (!result.status) {
+    toast.error(result.errorMessage || result.message || "An error occurred");
     return;
   }
-  onSuccess(result as T);
+  onSuccess(result);
 }

@@ -75,7 +75,7 @@ export function HowItWorksSection() {
               className="relative px-4 text-center"
             >
               {/* Step circle with ring */}
-              <div className="relative mx-auto mb-6 h-22 w-22">
+              <div className="relative mx-auto mb-6 size-22">
                 <motion.div
                   whileInView={{ rotate: 360 }}
                   viewport={{ once: true }}
@@ -87,7 +87,7 @@ export function HowItWorksSection() {
                 />
                 <div className="bg-card absolute inset-0.75 rounded-full" />
                 <div className="from-primary shadow-primary/20 absolute inset-1.5 flex items-center justify-center rounded-full bg-linear-to-br to-amber-500 shadow-lg">
-                  <s.icon className="h-6 w-6 text-white" />
+                  <s.icon className="size-6 text-white" />
                 </div>
               </div>
 

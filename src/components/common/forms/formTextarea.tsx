@@ -76,7 +76,7 @@ const FormTextArea: React.FC<FormTextAreaProps> = memo(
               {description && <FormDescription>{description}</FormDescription>}
               {showError && error && (
                 <div className="flex items-center gap-x-1">
-                  <AlertCircle className="text-destructive h-4 w-4" />
+                  <AlertCircle className="text-destructive size-4" />
                   <FormMessage />
                 </div>
               )}

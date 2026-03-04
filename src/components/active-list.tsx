@@ -62,9 +62,9 @@ export function ActiveList({
   useEffect(() => {
     if (!selectedTopicId) return;
     let cancelled = false;
-    getDocuments(selectedTopicId).then((docs) => {
-      if (!cancelled) {
-        setDocuments(docs);
+    getDocuments(selectedTopicId).then((res) => {
+      if (!cancelled && res.status) {
+        setDocuments(res.data || []);
         setLoadedTopicId(selectedTopicId);
       }
     });
@@ -82,8 +82,10 @@ export function ActiveList({
         topicId: selectedTopicId!,
       });
       handleActionResult(result, (r) => {
-        setDocuments((prev) => [r.document, ...prev]);
-        onSelectDocument(r.document.id);
+        if (r.data) {
+          setDocuments((prev) => [r.data!, ...prev]);
+          onSelectDocument(r.data!.id);
+        }
         form.reset();
         setShowAddForm(false);
         onRefresh();

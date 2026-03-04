@@ -5,8 +5,8 @@
 5. No img tag is allowed in the codebase use npm i sharp and the Image tag only.
 6. No anchor tags allowed only Link tags are allowed.
 7. Keep components simple do not overdo a component.
-8. No DRY violations.
-9. No YAGNI violations.
+8. No DRY violations inside codebase VERY STRICT RULE.
+9. No YAGNI violations inside codebase VERY STRICT RULE.
 10. All the forms should use Form component from shadcn and react form hook and zod validations.
 11. No inline styles allowed only tailwind classes are allowed (Dynamic styles for animations are an exception).
 12. All the colors should be coming from global.css and no hardcoded custom values are allowed for tailwind classes.
@@ -17,3 +17,5 @@
 17. All the endpoints should be used inside apiEndpoints.ts only if its called using the url else this can be an exception.
 18. h-x w-x shouldnt be used instead size-x should be used.
 19. Every LOC should be readable do not add nested ternaries or complex conditional statements.
+20. Action results should be handled by a standard function and not inside page.tsx or inside any component file.
+21. Toast should only be imported at components or pages when absolutely necessary.

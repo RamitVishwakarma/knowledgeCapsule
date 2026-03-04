@@ -45,7 +45,7 @@ export function Dashboard({ initialTopics, initialArchivedCount }: DashboardProp
         {/* Mobile header */}
         <div className="border-border bg-card flex items-center gap-3 border-b px-4 py-3 md:hidden">
           <Button variant="ghost" size="icon" onClick={toggleSidebar} className="size-9">
-            <Menu className="text-foreground h-5 w-5" />
+            <Menu className="text-foreground size-5" />
           </Button>
           <span className="text-foreground text-sm">Knowledge Capsule</span>
         </div>
