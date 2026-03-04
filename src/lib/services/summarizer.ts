@@ -3,10 +3,7 @@ import Groq from "groq-sdk";
 // ~4 chars per token; leave headroom for the prompt and response
 const MAX_TRANSCRIPT_CHARS = 24_000;
 
-export async function generateSummary(
-  transcript: string,
-  title: string
-): Promise<string> {
+export async function generateSummary(transcript: string, title: string): Promise<string> {
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
   const truncated =

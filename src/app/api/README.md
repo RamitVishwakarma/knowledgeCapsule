@@ -36,10 +36,7 @@ export async function POST(request: NextRequest) {
 
 ```ts
 // app/api/documents/[id]/route.ts
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   const body = await request.json();
   const updated = await updateDocument(params.id, body);
   return NextResponse.json(updated);

@@ -60,12 +60,12 @@ export default async function DashboardPage() {
 
 ## When to use Server Actions vs API Routes
 
-| | Server Actions | API Routes |
-|---|---|---|
-| Internal mutations | ✅ | ✗ |
-| Form submissions | ✅ | ✗ |
-| Public HTTP endpoint | ✗ | ✅ |
-| Webhook receiver | ✗ | ✅ |
-| Mobile app API | ✗ | ✅ |
+|                      | Server Actions | API Routes |
+| -------------------- | -------------- | ---------- |
+| Internal mutations   | ✅             | ✗          |
+| Form submissions     | ✅             | ✗          |
+| Public HTTP endpoint | ✗              | ✅         |
+| Webhook receiver     | ✗              | ✅         |
+| Mobile app API       | ✗              | ✅         |
 
 See `guidelines.md` → "Server Actions" for the full pattern.

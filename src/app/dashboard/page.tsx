@@ -24,9 +24,7 @@ export default async function DashboardPage() {
   ]);
 
   const countMap = new Map(docCounts.map((c) => [c._id.toString(), c.count]));
-  const topics = rawTopics.map((raw) =>
-    serializeTopic(raw, countMap.get(raw._id.toString()) ?? 0)
-  );
+  const topics = rawTopics.map((raw) => serializeTopic(raw, countMap.get(raw._id.toString()) ?? 0));
 
   return <Dashboard initialTopics={topics} initialArchivedCount={archivedCount} />;
 }

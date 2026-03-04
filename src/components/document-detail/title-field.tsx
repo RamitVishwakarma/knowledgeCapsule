@@ -28,14 +28,17 @@ export function DocumentDetailTitleField({
         inputClassName="flex-1 px-3 py-2 bg-input-background border border-primary/30 rounded-lg outline-none text-foreground"
         showCancelButton
         onDraftChange={field.setDraft}
-        onSave={() => { onSave(field.draft); field.cancelEdit(); }}
+        onSave={() => {
+          onSave(field.draft);
+          field.cancelEdit();
+        }}
         onCancelEdit={field.cancelEdit}
       />
     );
   }
 
   return (
-    <div className="flex items-start gap-2 group">
+    <div className="group flex items-start gap-2">
       <h1 className={`text-foreground flex-1 ${isArchived ? "opacity-70" : ""}`}>{title}</h1>
       {!isArchived && (
         <Button

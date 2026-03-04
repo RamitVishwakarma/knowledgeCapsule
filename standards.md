@@ -19,3 +19,4 @@
 19. Every LOC should be readable do not add nested ternaries or complex conditional statements.
 20. Action results should be handled by a standard function and not inside page.tsx or inside any component file.
 21. Toast should only be imported at components or pages when absolutely necessary.
+22. Nothing should be harcoded everything should have its own constant file or a constant file that has all the configs.

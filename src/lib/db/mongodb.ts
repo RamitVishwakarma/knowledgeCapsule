@@ -12,9 +12,7 @@ const isValidUri = uri.startsWith("mongodb://") || uri.startsWith("mongodb+srv:/
 
 if (!isValidUri) {
   // During build time with placeholder values — defer the error to runtime
-  clientPromise = Promise.reject(
-    new Error("MONGODB_URI is not configured. Add it to .env.local")
-  );
+  clientPromise = Promise.reject(new Error("MONGODB_URI is not configured. Add it to .env.local"));
 } else if (process.env.NODE_ENV === "development") {
   if (!global._mongoClientPromise) {
     const client = new MongoClient(uri);

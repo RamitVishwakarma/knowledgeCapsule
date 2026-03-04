@@ -75,6 +75,7 @@ Where does it live?
 Base-level, generic UI components — typically from shadcn/ui. No business logic.
 
 **When to use:**
+
 - Reusable across the entire application
 - Examples: Button, Input, Card, Dialog, Badge, Select
 
@@ -83,6 +84,7 @@ Base-level, generic UI components — typically from shadcn/ui. No business logi
 Components specific to a feature or domain. Add `"use client"` if they use hooks or event handlers.
 
 **When to use:**
+
 - Component is specific to one feature or page
 - Examples: `sidebar.tsx`, `document-list.tsx`, `document-detail.tsx`, `landing-page.tsx`
 
@@ -179,6 +181,7 @@ export default async function DashboardPage() {
 ### When to use API Routes instead
 
 Only create `src/app/api/[resource]/route.ts` when:
+
 - You need a **public HTTP endpoint** (e.g., a webhook receiver)
 - A **mobile app or third-party service** needs to call your backend over HTTP
 - Server Actions are not appropriate for the use case
@@ -390,7 +393,7 @@ Use `next/image` instead of `<img>` for all images. Add external domains to `nex
 ```tsx
 import Image from "next/image";
 
-<Image src="/logo.png" alt="Logo" width={200} height={50} priority />
+<Image src="/logo.png" alt="Logo" width={200} height={50} priority />;
 ```
 
 ### Links
@@ -400,7 +403,7 @@ Use `next/link` instead of `<a>` for internal navigation.
 ```tsx
 import Link from "next/link";
 
-<Link href="/dashboard">Go to Dashboard</Link>
+<Link href="/dashboard">Go to Dashboard</Link>;
 ```
 
 ### Fonts
@@ -457,9 +460,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "example.com" },
-    ],
+    remotePatterns: [{ protocol: "https", hostname: "example.com" }],
   },
 };
 
@@ -551,10 +552,10 @@ const StatusBadge = ({ status, className }: StatusBadgeProps) => {
 
 ### Logging
 
-| Environment | Allowed |
-|-------------|---------|
+| Environment | Allowed                                        |
+| ----------- | ---------------------------------------------- |
 | Development | `console.log`, `console.warn`, `console.error` |
-| Production | `console.warn`, `console.error` only |
+| Production  | `console.warn`, `console.error` only           |
 
 Never log tokens, passwords, or any PII.
 
