@@ -1,6 +1,6 @@
 "use client";
 
-import { FolderOpen, Plus, Loader2, FileText } from "lucide-react";
+import { FolderOpen, Plus, Loader2, FileText, Link, Upload } from "lucide-react";
 import { useState, useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +14,9 @@ import { Form } from "@/components/ui/form";
 import FormInput from "@/components/common/forms/form-input";
 import FormTextArea from "@/components/common/forms/formTextarea";
 import { handleActionResult } from "@/lib/utils/action-result";
+import { VideoUploadTab } from "@/components/video-upload-tab";
+
+type VideoInputMode = "url" | "upload";
 
 const documentSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -47,6 +50,7 @@ export function ActiveList({
   const [loadedTopicId, setLoadedTopicId] = useState<string | null>(null);
   const isLoading = !!selectedTopicId && selectedTopicId !== loadedTopicId;
   const [showAddForm, setShowAddForm] = useState(false);
+  const [videoInputMode, setVideoInputMode] = useState<VideoInputMode>("url");
   const [isSubmitting, startTransition] = useTransition();
 
   const form = useForm<DocumentFormValues>({
@@ -88,6 +92,7 @@ export function ActiveList({
         }
         form.reset();
         setShowAddForm(false);
+        setVideoInputMode("url");
         onRefresh();
       });
     });
@@ -153,11 +158,48 @@ export function ActiveList({
                   label="Notes for future you"
                   placeholder="Any context or timestamps your future self should know about..."
                 />
-                <FormInput
-                  name="videoUrl"
-                  label="YouTube URL * (unlisted recommended)"
-                  placeholder="https://www.youtube.com/watch?v=..."
-                />
+                <div className="space-y-3">
+                  <div className="flex gap-1 rounded-lg bg-secondary p-1">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={videoInputMode === "url" ? "default" : "ghost"}
+                      onClick={() => setVideoInputMode("url")}
+                      className="flex-1 gap-1.5 text-xs"
+                    >
+                      <Link className="size-3" />
+                      YouTube URL
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={videoInputMode === "upload" ? "default" : "ghost"}
+                      onClick={() => setVideoInputMode("upload")}
+                      className="flex-1 gap-1.5 text-xs"
+                    >
+                      <Upload className="size-3" />
+                      Upload video
+                    </Button>
+                  </div>
+                  {videoInputMode === "url" ? (
+                    <FormInput
+                      name="videoUrl"
+                      label="YouTube URL * (unlisted recommended)"
+                      placeholder="https://www.youtube.com/watch?v=..."
+                    />
+                  ) : (
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-foreground">Upload video *</p>
+                      <VideoUploadTab
+                        title={form.watch("title")}
+                        onUploadComplete={(url) => {
+                          form.setValue("videoUrl", url, { shouldValidate: true });
+                          setVideoInputMode("url");
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
                 <div className="flex gap-2 pt-2">
                   <Button type="submit" disabled={isSubmitting} className="px-5 text-sm">
                     {isSubmitting ? "Saving..." : "Save recording"}
@@ -167,6 +209,7 @@ export function ActiveList({
                     variant="outline"
                     onClick={() => {
                       setShowAddForm(false);
+                      setVideoInputMode("url");
                       form.reset();
                     }}
                     className="px-5 text-sm"
