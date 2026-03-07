@@ -26,14 +26,15 @@ export function HeroSection({ onSignIn }: HeroSectionProps) {
       <FloatingOrbs />
       <Particles />
 
-      <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10">
+      <div className="relative z-10">
         <div className="mx-auto max-w-7xl">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="mx-auto max-w-4xl text-center"
-          >
+          <motion.div style={{ y: heroY, opacity: heroOpacity }}>
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+              className="mx-auto max-w-4xl text-center"
+            >
             {/* Badge */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
@@ -126,12 +127,13 @@ export function HeroSection({ onSignIn }: HeroSectionProps) {
               </motion.div>
               <p className="text-muted-foreground text-sm">Free demo &bull; No sign-up required</p>
             </motion.div>
+            </motion.div>
           </motion.div>
 
           {/* Dashboard Preview */}
           <HeroDashboardPreview />
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }

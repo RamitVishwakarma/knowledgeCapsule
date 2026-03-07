@@ -47,7 +47,7 @@ export function HeroDashboardPreview() {
               Knowledge Capsule — Your Knowledge Timeline
             </span>
           </div>
-          <div className="flex h-85 md:h-105">
+          <div className="flex aspect-video">
             {/* Sidebar preview */}
             <div className="bg-preview-dark hidden w-56 flex-col p-4 md:flex">
               <div className="text-preview-muted mb-4 text-[10px] tracking-wider uppercase">
