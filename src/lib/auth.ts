@@ -3,7 +3,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import clientPromise from "@/lib/db/mongodb";
 
-// Augment the NextAuth session type to include user.id
+// Augment the NextAuth session and JWT types to include user.id
 declare module "next-auth" {
   interface Session {
     user: {
@@ -15,8 +15,15 @@ declare module "next-auth" {
   }
 }
 
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: string;
+  }
+}
+
 export const authOptions: AuthOptions = {
   adapter: MongoDBAdapter(clientPromise, { databaseName: "knowledge-capsule" }),
+  session: { strategy: "jwt" },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -30,9 +37,15 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    session({ session, user }) {
+    jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    session({ session, token }) {
       if (session.user) {
-        session.user.id = user.id;
+        session.user.id = token.id ?? token.sub ?? "";
       }
       return session;
     },

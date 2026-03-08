@@ -61,7 +61,26 @@ export function DocumentDetailTranscriptSection({
 
       {showTranscript && (
         <div className="border-border mt-3 border-t pt-3">
-          {!doc.transcript && doc.videoProvider === "youtube" && !isArchived && (
+          {field.isEditing && !isArchived && (
+            <div>
+              <textarea
+                value={field.draft}
+                onChange={(e) => field.setDraft(e.target.value)}
+                rows={8}
+                className="bg-input-background border-border focus:border-primary w-full resize-none rounded-lg border px-3 py-2.5 font-mono text-sm outline-none"
+              />
+              <div className="mt-2 flex gap-2">
+                <Button onClick={onSaveTranscript} disabled={isSaving} className="text-sm">
+                  {isSaving ? "Saving..." : "Save"}
+                </Button>
+                <Button variant="outline" onClick={field.cancelEdit} className="text-sm">
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {!field.isEditing && !doc.transcript && doc.videoProvider === "youtube" && !isArchived && (
             <div className="py-4 text-center">
               <p className="text-muted-foreground mb-3 text-sm">
                 No transcript yet. Try fetching it from YouTube.
@@ -90,7 +109,7 @@ export function DocumentDetailTranscriptSection({
             </div>
           )}
 
-          {!doc.transcript && doc.videoProvider !== "youtube" && !isArchived && (
+          {!field.isEditing && !doc.transcript && doc.videoProvider !== "youtube" && !isArchived && (
             <div className="py-4 text-center">
               <p className="text-muted-foreground mb-3 text-sm">
                 No transcript available for this recording.
@@ -105,52 +124,34 @@ export function DocumentDetailTranscriptSection({
             </div>
           )}
 
-          {doc.transcript &&
-            (field.isEditing && !isArchived ? (
-              <div>
-                <textarea
-                  value={field.draft}
-                  onChange={(e) => field.setDraft(e.target.value)}
-                  rows={8}
-                  className="bg-input-background border-border focus:border-primary w-full resize-none rounded-lg border px-3 py-2.5 font-mono text-sm outline-none"
-                />
-                <div className="mt-2 flex gap-2">
-                  <Button onClick={onSaveTranscript} disabled={isSaving} className="text-sm">
-                    {isSaving ? "Saving..." : "Save"}
-                  </Button>
-                  <Button variant="outline" onClick={field.cancelEdit} className="text-sm">
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <p className="text-muted-foreground max-h-60 overflow-y-auto font-mono text-sm leading-relaxed whitespace-pre-wrap">
-                  {doc.transcript}
-                </p>
-                <div className="mt-3 flex gap-2">
-                  {!isArchived && (
-                    <Button
-                      variant="link"
-                      onClick={() => field.startEdit(doc.transcript ?? "")}
-                      className="text-primary h-auto gap-1 p-0 text-sm"
-                    >
-                      <Edit3 className="size-3.5" /> Edit transcript
-                    </Button>
-                  )}
+          {!field.isEditing && doc.transcript && (
+            <>
+              <p className="text-muted-foreground max-h-60 overflow-y-auto font-mono text-sm leading-relaxed whitespace-pre-wrap">
+                {doc.transcript}
+              </p>
+              <div className="mt-3 flex gap-2">
+                {!isArchived && (
                   <Button
                     variant="link"
-                    onClick={() => {
-                      navigator.clipboard.writeText(doc.transcript ?? "");
-                      toast.success("Copied!");
-                    }}
-                    className="text-muted-foreground hover:text-foreground h-auto gap-1 p-0 text-sm"
+                    onClick={() => field.startEdit(doc.transcript ?? "")}
+                    className="text-primary h-auto gap-1 p-0 text-sm"
                   >
-                    <Copy className="size-3.5" /> Copy
+                    <Edit3 className="size-3.5" /> Edit transcript
                   </Button>
-                </div>
-              </>
-            ))}
+                )}
+                <Button
+                  variant="link"
+                  onClick={() => {
+                    navigator.clipboard.writeText(doc.transcript ?? "");
+                    toast.success("Copied!");
+                  }}
+                  className="text-muted-foreground hover:text-foreground h-auto gap-1 p-0 text-sm"
+                >
+                  <Copy className="size-3.5" /> Copy
+                </Button>
+              </div>
+            </>
+          )}
 
           <p className="text-muted-foreground/50 mt-3 text-xs">
             Summaries are generated from available transcripts and are fully editable.
